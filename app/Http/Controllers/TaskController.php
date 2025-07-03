@@ -7,16 +7,17 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\Task;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskController extends Controller
 {
+    use AuthorizesRequests;
     public function index()
     {
         $tasks = Task::where('user_id', auth()->id())->get();
 
-        return view('tasks.index', [
-            'tasks' => $tasks
-        ]);
+        return view('tasks.index', compact('tasks'));
+
     }
 
     public function share($id)
@@ -29,11 +30,9 @@ class TaskController extends Controller
 
         $link = url('/public/task/' . $task->access_token);
 
-        // Możesz przekierować z komunikatem flash:
         return redirect()->route('tasks.index')->with('public_link', $link);
 
-        // Jeśli chcesz zwracać JSON (np. do ajax), to wtedy:
-        // return response()->json(['public_link' => $link]);
+
     }
 
     public function store(Request $request)
@@ -49,5 +48,37 @@ class TaskController extends Controller
         $task = auth()->user()->tasks()->create($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Zadanie zostało dodane');
+    }
+    public function edit(Task $task)
+    {
+        $this->authorize('update', $task);
+
+        return view('tasks.edit', compact('task'));
+    }
+
+    public function update(Request $request, Task $task)
+    {
+        $this->authorize('update', $task);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'priority' => ['required', Rule::in(['low', 'medium', 'high'])],
+            'status' => ['required', Rule::in(['to-do', 'in-progress', 'done'])],
+            'due_date' => 'required|date|after_or_equal:today',
+        ]);
+
+        $task->update($validated);
+
+        return redirect()->route('tasks.index')->with('success', 'Zadanie zostało zaktualizowane');
+    }
+
+    public function destroy(Task $task)
+    {
+        $this->authorize('delete', $task);
+
+        $task->delete();
+
+        return redirect()->route('tasks.index')->with('success', 'Zadanie zostało usunięte');
     }
 }
