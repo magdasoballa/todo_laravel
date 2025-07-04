@@ -42,5 +42,9 @@ return $this->belongsTo(User::class);
             default => $this->priority,
         };
     }
+    public function histories()
+    {
+        return $this->hasMany(TaskHistory::class);
+    }
 
 }

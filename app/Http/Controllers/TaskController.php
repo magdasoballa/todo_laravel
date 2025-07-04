@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\TaskHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -38,16 +39,17 @@ class TaskController extends Controller
     {
         $task = Task::where('user_id', auth()->id())->findOrFail($id);
 
-        $task->access_token = Str::uuid();
-        $task->token_expires_at = Carbon::now()->addHours(24);
-        $task->save();
+        if (!$task->access_token || $task->token_expires_at < now()) {
+            $task->access_token = Str::uuid();
+            $task->token_expires_at = now()->addMinute();
+            $task->save();
+        }
 
         $link = url('/public/task/' . $task->access_token);
 
         return redirect()->route('tasks.index')->with('public_link', $link);
-
-
     }
+
 
     public function store(Request $request)
     {
@@ -81,7 +83,15 @@ class TaskController extends Controller
             'status' => ['required', Rule::in(['to-do', 'in-progress', 'done'])],
             'due_date' => 'required|date|after_or_equal:today',
         ]);
-
+        TaskHistory::create([
+            'task_id' => $task->id,
+            'user_id' => auth()->id(),
+            'name' => $task->name,
+            'description' => $task->description,
+            'priority' => $task->priority,
+            'status' => $task->status,
+            'due_date' => $task->due_date,
+        ]);
         $task->update($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Zadanie zostało zaktualizowane');

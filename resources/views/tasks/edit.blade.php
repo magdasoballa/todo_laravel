@@ -54,5 +54,23 @@
             <button type="submit" class="btn blue">Zapisz zmiany</button>
             <a href="{{ route('tasks.index') }}" class="link" style="margin-left: 1rem;">Anuluj</a>
         </form>
+        @if ($task->histories->count())
+            <div class="task-history mt-5">
+                <h2>Historia zmian</h2>
+                <ul class="history-list">
+                    @foreach ($task->histories as $history)
+                        <li>
+                            <strong>{{ $history->updated_at->format('Y-m-d H:i') }}</strong>:
+                            {{ $history->name }} –
+                            {{ ucfirst($history->status) }},
+                            priorytet: {{ ucfirst($history->priority) }},
+                            termin: {{ \Carbon\Carbon::parse($history->due_date)->format('Y-m-d') }}
+
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
     </div>
 @endsection
