@@ -33,5 +33,14 @@ return $this->belongsTo(User::class);
         'due_date' => 'date',
         'token_expires_at' => 'datetime',
     ];
+    public function getPriorityLabelAttribute(): string
+    {
+        return match($this->priority) {
+            'low' => 'Niski',
+            'medium' => 'Średni',
+            'high' => 'Wysoki',
+            default => $this->priority,
+        };
+    }
 
 }

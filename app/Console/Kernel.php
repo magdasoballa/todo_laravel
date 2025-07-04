@@ -6,17 +6,16 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\Task;
 use App\Notifications\TaskDueNotification;
+use App\Notifications\TaskReminderNotification;
 use Illuminate\Support\Carbon;
 
 class Kernel extends ConsoleKernel
 {
-
     protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');
         require base_path('routes/console.php');
     }
-
 
     protected function schedule(Schedule $schedule): void
     {
@@ -26,7 +25,9 @@ class Kernel extends ConsoleKernel
                 ->get();
 
             foreach ($tasks as $task) {
-                $task->user->notify(new TaskDueNotification($task));
+                if ($task->user && $task->user->email) {
+                    $task->user->notify(new TaskReminderNotification($task));
+                }
             }
         })->daily();
     }

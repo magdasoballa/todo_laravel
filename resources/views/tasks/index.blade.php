@@ -57,12 +57,44 @@
 
             <button type="submit" class="btn green">Dodaj zadanie</button>
         </form>
+        <form method="GET" action="{{ route('tasks.index') }}" class="task-form" style="margin-bottom: 2rem;">
+            <div class="row">
+                <div>
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="">-- Wszystkie --</option>
+                        <option value="to-do" {{ request('status') == 'to-do' ? 'selected' : '' }}>Do zrobienia</option>
+                        <option value="in-progress" {{ request('status') == 'in-progress' ? 'selected' : '' }}>W trakcie</option>
+                        <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Zrobione</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="priority">Priorytet</label>
+                    <select name="priority" id="priority">
+                        <option value="">-- Wszystkie --</option>
+                        <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>Niski</option>
+                        <option value="medium" {{ request('priority') == 'medium' ? 'selected' : '' }}>Średni</option>
+                        <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>Wysoki</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="due_date">Termin</label>
+                    <input type="date" name="due_date" id="due_date" value="{{ request('due_date') }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn blue">Filtruj</button>
+            <a href="{{ route('tasks.index') }}" class="btn">Reset</a>
+        </form>
 
         <ul class="task-list">
             @forelse ($tasks as $task)
                 <li class="task-item">
                     <div>
                         <strong>{{ $task->name }}</strong><br>
+                        <strong>{{ $task->priority_label }}</strong><br>
                         <small>{{ $task->status }} — termin: {{ \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') }}</small>
                     </div>
                     <div class="actions">
