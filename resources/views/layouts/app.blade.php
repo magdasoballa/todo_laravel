@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     <script>
         (function() {
@@ -35,9 +34,27 @@
     <link rel="preconnect" href="https://fonts.bunny.net" />
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-    @vite(['resources/css/app.css'])
+    @stack('styles')
+
 </head>
-<body class="font-sans antialiased">
+<body class="bg-gray text-gray-900 font-sans antialiased">
+<header class="flex items-center justify-between p-4 bg-gray-100 border-b">
+    <h1 class="text-lg font-semibold">TODO APP</h1>
+
+    <div class="flex items-center space-x-4">
+        @auth
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                Wyloguj się
+            </button>
+        </form>
+        @endauth
+
+    </div>
+</header>
+
 <div class="container mx-auto p-4">
     @yield('content')
 </div>
