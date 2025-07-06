@@ -1,18 +1,21 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\Task;
 use App\Models\TaskHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use App\Models\Task;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Carbon\Carbon;
+use Spatie\GoogleCalendar\Event;
 
 class TaskController extends Controller
 {
     use AuthorizesRequests;
+
     public function index(Request $request)
     {
         $query = Task::where('user_id', auth()->id());
@@ -34,7 +37,6 @@ class TaskController extends Controller
         return view('tasks.index', compact('tasks'));
     }
 
-
     public function share($id)
     {
         $task = Task::where('user_id', auth()->id())->findOrFail($id);
@@ -50,7 +52,6 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->with('public_link', $link);
     }
 
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -63,8 +64,20 @@ class TaskController extends Controller
 
         $task = auth()->user()->tasks()->create($validated);
 
+//        if (session()->has('google_token')) {
+//            $event = new Event;
+//
+//            $event->name = $task->name;
+//            $event->description = $task->description ?? '';
+//            $event->startDateTime = Carbon::parse($task->due_date)->setTime(9, 0, 0);
+//            $event->endDateTime = Carbon::parse($task->due_date)->setTime(10, 0, 0);
+//
+//            $event->save();
+//        }
+
         return redirect()->route('tasks.index')->with('success', 'Zadanie zostało dodane');
     }
+
     public function edit(Task $task)
     {
         $this->authorize('update', $task);
@@ -83,6 +96,7 @@ class TaskController extends Controller
             'status' => ['required', Rule::in(['to-do', 'in-progress', 'done'])],
             'due_date' => 'required|date|after_or_equal:today',
         ]);
+
         TaskHistory::create([
             'task_id' => $task->id,
             'user_id' => auth()->id(),
@@ -92,6 +106,7 @@ class TaskController extends Controller
             'status' => $task->status,
             'due_date' => $task->due_date,
         ]);
+
         $task->update($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Zadanie zostało zaktualizowane');
@@ -100,7 +115,6 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $this->authorize('delete', $task);
-
         $task->delete();
 
         return redirect()->route('tasks.index')->with('success', 'Zadanie zostało usunięte');

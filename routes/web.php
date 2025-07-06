@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\PublicTaskController;
 use App\Http\Controllers\TaskController;
+use App\Models\Task;
+use App\Notifications\TaskReminderNotification;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Socialite\Facades\Socialite;
 
 Route::middleware('auth')->group(function () {
 
@@ -26,6 +30,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/tasks/{task}/share', [TaskController::class, 'share'])->name('tasks.share');
 
     Route::get('/public/task/{token}', [PublicTaskController::class, 'show'])->name('tasks.public');
+    Route::get('/google/redirect', function () {
+        return Socialite::driver('google')
+            ->scopes(['https://www.googleapis.com/auth/calendar'])
+            ->redirect();
+    });
+
+    Route::get('/google/callback', function () {
+        $user = Socialite::driver('google')->user();
+        session(['google_token' => $user->token]);
+
+        return redirect()->route('tasks.index')->with('success', 'Połączono z Google Calendar!');
+    });
+
 
 });
 
