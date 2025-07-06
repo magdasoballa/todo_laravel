@@ -1,0 +1,1 @@
+Z zadania zostały wykonane wszystkie punkty - jedynie z integracją z google calendar miałam problem, poniewaz google oczekuje istniejącej domeny i nie zadziałało to na testowej. Nie uzyłam takze Dockera - miałam kiedyś okazję z niego korzystać jednak sama go nie konfigurowałam. Poza tym zadanie nie stanowiło problemu.
